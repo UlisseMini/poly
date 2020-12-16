@@ -155,4 +155,149 @@ describe('Tensor', () => {
       assert.throws(() => b.mul(a), /shape/)
     })
   })
+  
+  describe('zeros', () => {
+    it('should make a (n,) tensor of zeros', () => {
+      let t = Tensor.zeros([3])
+      assert.deepEqual(t.asVectors(), [0,0,0])
+    })
+
+    it('should make a (n,n) tensor of zeros', () => {
+      let t = Tensor.zeros([3,3])
+      assert.deepEqual(t.asVectors(), [
+        [0,0,0],
+        [0,0,0],
+        [0,0,0]
+      ])
+    })
+
+    it('should make a (n,n,n) tensor of zeros', () => {
+      let t = Tensor.zeros([3,3,3])
+
+      assert.deepEqual(t.asVectors(), [
+        [[0,0,0],
+        [0,0,0],
+        [0,0,0]],
+
+        [[0,0,0],
+        [0,0,0],
+        [0,0,0]],
+
+        [[0,0,0],
+        [0,0,0],
+        [0,0,0]]
+      ])
+    })
+  })
+
+  describe('ravel', () => {
+    it('should unravel a 2x2', () => {
+      let t = new Tensor([
+        [1,2],
+        [3,4]
+      ])
+      assert.deepEqual(t.ravel(), [1,2,3,4])
+    })
+
+    it('should unravel a 3x2', () => {
+      let t = new Tensor([
+        [1,2],
+        [3,4],
+        [5,6]
+      ])
+      assert.deepEqual(t.ravel(), [1,2,3,4,5,6])
+    })
+
+    it('should unravel a 3x3', () => {
+      let t = new Tensor([
+        [1,2, -2],
+        [3,4, -4],
+        [5,6, -6]
+      ])
+      assert.deepEqual(t.ravel(), [1,2,-2,3,4,-4,5,6,-6])
+    })
+  })
+
+  describe('reshape', () => {
+    it('should reshape a 3x4 tensor to a 4x3 tensor', () => {
+      let t = new Tensor([
+        [1,2,3,4],
+        [0,1,2,3],
+        [-1,0,1,2],
+      ])
+
+      assert.deepEqual(t.reshape([4,3]).asVectors(), [
+        [1, 2, 3],
+        [4, 0, 1],
+        [2, 3, -1],
+        [0, 1, 2],
+      ])
+    })
+  })
+
+  describe('transpose', () => {
+    it('should transpose a 3x2 matrix', () => {
+      let z = new Tensor([
+        [1,2],
+        [3,4],
+        [5,6],
+      ])
+      let res = z.transpose().asVectors()
+      assert.deepEqual(res, [
+        [1, 3, 5],
+        [2, 4, 6],
+      ])
+    })
+
+    it('should not change a row vector', () => {
+      let z = new Tensor([1,2,3])
+      assert.deepEqual(z.transpose().asVectors(), z.asVectors())
+    })
+  })
+
+  describe('matmul', () => {
+    // it('should do matrix vector multiplication', () => {
+    //   let A = new Tensor([
+    //     [1, 2, 3],
+    //     [3, 4, 5],
+    //     [6, 7, 8]
+    //   ])
+    //   let x = new Tensor([1,2,3])
+
+    //   assert.deepEqual(A.matmul(x), [14, 26, 44])
+    // })
+
+    it('should do matrix matrix multiplication', () => {
+      let A = new Tensor([
+        [2, 3, 2],
+        [0, 4, 4],
+        [0, 3, 4]
+      ])
+
+      let B = new Tensor([
+        [1, 2, 0],
+        [1, 2, 2],
+        [1, 0, 1]
+      ])
+
+      assert.deepEqual(A.matmul(B).asVectors(), [
+        [ 7, 10,  8],
+        [ 8,  8, 12],
+        [ 7,  6, 10]
+      ])
+    })
+  })
+
+  // describe('solve', () => {
+  //   it('should solve 2x2 systems of equations', () => {
+  //     let A = new Tensor([
+  //       [2, 1],
+  //       [3, 1],
+  //     ])
+  //     let b = new Tensor([3, 5])
+  //     let x = Tensor.solve(A, b)
+
+  //     assert.deepEqual(A.matmul(x).asVectors(), b.asVectors())
+  //   })
+  // })
 })

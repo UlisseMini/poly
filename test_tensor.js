@@ -89,15 +89,29 @@ describe('Tensor', () => {
     })
   })
 
-  // todo: test implace as well
   // todo: implace generic test generator?
   describe('add', () => {
-    it('should add vectors piecewise', () => {
+    it('should add piecewise', () => {
+      let a = new Tensor([1,2,3])
+      assert.deepEqual(a.add(1).asVectors(), [2,3,4])
+
+      a = new Tensor([
+        [1,2,3],
+        [2,3,4]
+      ])
+
+      assert.deepEqual(a.add(2).asVectors(), [
+        [3,4,5],
+        [4,5,6]
+      ])
+    })
+
+    it('should add tensors piecewise', () => {
       let a = new Tensor([1,2,3])
       let b = new Tensor([2,3,4])
 
-      assert.deepEqual(a.add(b), [3,5,7])
-      assert.deepEqual(b.add(a), [3,5,7])
+      assert.deepEqual(a.add(b).asVectors(), [3,5,7])
+      assert.deepEqual(b.add(a).asVectors(), [3,5,7])
     })
 
     it('should raise error with mismatched shapes', () => {
@@ -106,6 +120,39 @@ describe('Tensor', () => {
 
       assert.throws(() => a.add(b), /shape/)
       assert.throws(() => b.add(a), /shape/)
+    })
+  })
+
+  describe('mul', () => {
+    it('should multiply piecewise', () => {
+      let a = new Tensor([1,2,3])
+      assert.deepEqual(a.mul(2).asVectors(), [2,4,6])
+
+      a = new Tensor([
+        [1,2,3],
+        [2,3,4]
+      ])
+
+      assert.deepEqual(a.mul(2).asVectors(), [
+        [2,4,6],
+        [4,6,8]
+      ])
+    })
+
+    it('should multiply tensors piecewise', () => {
+      let a = new Tensor([1,2,3])
+      let b = new Tensor([2,3,4])
+
+      assert.deepEqual(a.mul(b).asVectors(), [2, 6, 12])
+      assert.deepEqual(b.mul(a).asVectors(), [2, 6, 12])
+    })
+
+    it('should raise error with mismatched shapes', () => {
+      let a = new Tensor([1,2,3])
+      let b = new Tensor([1,2,3,5])
+
+      assert.throws(() => a.mul(b), /shape/)
+      assert.throws(() => b.mul(a), /shape/)
     })
   })
 })

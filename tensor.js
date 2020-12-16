@@ -91,11 +91,29 @@ class Tensor {
 
   // TODO: Make these methods work piecewise for tensor values.
 
-  add(x)  {
-    if (x instanceof Tensor) {
-      // TODO SHAPES
+  add(other)  {
+    if (other instanceof Tensor) {
+      // --> if shapes not equal everything breaks <--
+      if (!eq(this.shape, other.shape)) {
+        throw Error(`mismatched shapes, ${this.shape} !== ${other.shape}`)
+      }
+
+      let result = []
+
+      // check outside to avoid reflection in the critical path
+      if (this.shape.length == 1) {
+        for (let i = 0; i < this.shape[0]; i++) {
+          result.push(this.v[i] + other.v[i])
+        }
+      } else {
+        for (let i = 0; i < this.shape[0]; i++) {
+          result.push(this.v[i].add(other.v[i]))
+        }
+      }
+
+      return new Tensor(result)
     } else {
-      return this.map(y => x+y)
+      return this.map(y => other+y)
     }
   }
   add_(x) { return this.map_(y => x+y) }

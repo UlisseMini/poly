@@ -210,6 +210,8 @@ class Tensor {
   // (not defined for higher dimensional tensors yet)
   // TODO: clean up this code, write an algorithm that doesn't use B.transpose()
   matmul(B) {
+    if (B == null) { throw Error(`cannot dot with ${B}`) }
+
     // aliases to make my life easier
     const [n, m] = this.shape
     const [m_, p] = B.shape
@@ -259,15 +261,57 @@ class Tensor {
     return children.join('\n')
   }
 
+  augment(vector) {
+    if (this.shape.length !== 2) throw Error('augment only supports matrices')
+    if (this.shape[0] !== vector.shape[0]) throw Error('shape mismatch')
+    const [n, m] = this.shape
+
+    let AUG = this.asVectors()
+    for (let row = 0; row < n; row++) {
+      AUG[row].push(vector.v[row])
+    }
+
+    return new Tensor(AUG)
+  }
+
 
   // Solve a system of equations using gaussian elimination
   // TODO:
   //   Row exchanges when pivot is 0
   //   LU factorization for solving multiple outputs efficently
+  //   support (n,m) systems
   static solve(A, b) {
-    // Tensorify for lazy people
-    A = new Tensor(A)
-    b = new Tensor(b)
+    if (A.shape.length !== 2) {
+      throw Error(`Can only solve (n,n) systems`)
+    }
+    if (b.shape.length !== 1 || b.shape[0] !== A.shape[0]) {
+      throw Error(`Can only solve (n,) outputs`)
+    }
+
+    const n = A.shape[0]
+
+    // Augment the matrix
+    // Calling it R because R[i] is row i
+    let R = A.augment(b)
+
+
+    // TODO: Make this work for any matrix, not just 2x2
+
+    // E(2,1)
+    let pivot = R[0][0]
+    let target = R[1][0]
+    console.log('pivot', pivot, 'target', target)
+    R[1] = R[1].add(R[0].mul(-target/pivot))
+
+    console.log('R')
+    console.log(R.pretty())
+
+    // Back substitution
+    for (let i = R.shape[0]-1; i >= 0; i--) {
+      // TODO
+    }
+
+    return R
   }
 }
 

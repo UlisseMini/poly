@@ -301,16 +301,31 @@ describe('Tensor', () => {
     })
   })
 
-  // describe('solve', () => {
-  //   it('should solve 2x2 systems of equations', () => {
-  //     let A = new Tensor([
-  //       [2, 1],
-  //       [3, 1],
-  //     ])
-  //     let b = new Tensor([3, 5])
-  //     let x = Tensor.solve(A, b)
+  describe('augment', () => {
+    it('should augment a (2,2) matrix with a (2,) vector', () => {
+      let A = new Tensor([
+        [1, 2],
+        [3, 4],
+      ])
+      let b = new Tensor([2, 4])
+      let AUG = A.augment(b)
+      assert.deepEqual(AUG.asVectors(), [
+        [1,2,2],
+        [3,4, 4],
+      ])
+    })
+  })
 
-  //     assert.deepEqual(A.matmul(x).asVectors(), b.asVectors())
-  //   })
-  // })
+  describe('solve', () => {
+    it('should solve 2x2 systems of equations', () => {
+      let A = new Tensor([
+        [1, 2],
+        [3, 4],
+      ])
+      let b = new Tensor([2, 4])
+      let x = Tensor.solve(A, b)
+
+      assert.deepEqual(A.matmul(x).asVectors(), b.asVectors())
+    })
+  })
 })

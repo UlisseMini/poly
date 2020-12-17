@@ -1,6 +1,8 @@
 /* --------------- Basic Tensor math library ----------------- */
 // TODO: Make np object and mimic numpy more
 // TODO: .length in Proxy object
+// Note: Efficency is *not* a priority, I will eventually setup benchmarks
+//       and optimize, but not yet!
 
 // why javascript... why?
 function eq(a, b) {
@@ -16,6 +18,7 @@ function proxyTensor(tensor) {
   return new Proxy(tensor, {
     get: function(target, prop) {
       // console.log('get', target, prop)
+      if (prop === 'T') { return target.transpose() }
       if (typeof prop === 'symbol') {
         return target[prop]
       }

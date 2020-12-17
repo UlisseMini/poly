@@ -11,11 +11,36 @@ function eq(a, b) {
   return a === b
 }
 
+function proxyTensor(tensor) {
+  // Use proxy to overload indexing
+  return new Proxy(tensor, {
+    get: function(target, prop) {
+      // console.log('get', target, prop)
+      if (typeof prop === 'symbol') {
+        return target[prop]
+      }
+
+      const v = isNaN(parseInt(prop)) ? target[prop] : target.v[prop]
+      if (typeof v === 'function') {
+        return v.bind(target)
+      }
+
+      return v
+    },
+
+    set: function(target, prop, val) {
+      // console.log('set', target, prop, val)
+      target.v[prop] = val
+      return true
+    }
+  })
+}
+
 // No operator overloading support >_<
 // Also super slow but its just a demo leave me alone
 class Tensor {
   constructor(xs) {
-    if (xs instanceof Tensor) return xs
+    if (xs instanceof Tensor) return proxyTensor(xs)
 
     // todo: throw exception for xs /= {null, array}
 
@@ -41,27 +66,7 @@ class Tensor {
       }
     }
 
-    // Use proxy to overload indexing
-    return new Proxy(this, {
-      get: function(target, prop) {
-        // console.log('get', target, prop)
-        if (typeof prop === 'symbol') {
-          return target[prop]
-        }
-
-        const v = isNaN(parseInt(prop)) ? target[prop] : target.v[prop]
-        if (typeof v === 'function') {
-          return v.bind(target)
-        }
-
-        return v
-      },
-
-      set: function(target, prop, val) {
-        // console.log('set', target, prop, val)
-        target.v[prop] = val
-      }
-    })
+    return proxyTensor(this)
   }
 
   static zeros(shape) {
@@ -191,16 +196,52 @@ class Tensor {
     return new Tensor(res)
   }
 
+  // only defined for vectors for now.
+  dot(b) {
+    const a = this
+    if (a.shape.length !== 1) { throw Error(`dot only supports vectors, this.shape is ${a.shape}`) } 
+    if (b.shape.length !== 1) { throw Error(`dot only supports vectors, b.shape is ${b.shape}`) } 
+    if (b.shape[0] !== a.shape[0]) { throw Error(`b.shape(${b.shape}) != a.shape(${a.shape})`) } 
+
+    return a.v.map((v, i) => v*b[i]).reduce((x,y) => x+y, 0)
+  }
+
   // Matrix multiplication, where if A=this B=x, this is AB
   // (not defined for higher dimensional tensors yet)
-  matmul(x) {
-    // (n*m)(m*p) = (n*p)
-    if (this.shape[1] === x.shape[0]) {
-      let result = Tensor.zeros([this.shape[0], x.shape[1]])
+  // TODO: clean up this code, write an algorithm that doesn't use B.transpose()
+  matmul(B) {
+    // aliases to make my life easier
+    const [n, m] = this.shape
+    const [m_, p] = B.shape
 
+    // (n by m) * (m by p) = (n by p)
+    if (m === m_) {
+      if (p == null || p === 1) {
+        // matrix-vector product
 
+        let result = Tensor.zeros([n])
+        for (let i = 0; i < n; i++) {
+          result[i] = B.dot(this.v[i])
+        }
+        return result
+      } else {
+        // matrix-matrix product
 
-      return result
+        let result = Tensor.zeros([n, p])
+
+        const BT = B.transpose()
+
+        for (let i = 0; i < n; i++) { // for row in A
+          for (let j = 0; j < p; j++) { // for col in B
+            const col = BT[j]
+            const row = this.v[i] // todo: why v needed? I thought proxy ):
+            result[i][j] = row.dot(col)
+          }
+        }
+
+        return result
+      }
+
     } else {
     // TODO: throw numpy styled error
     // matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 2 is different from 3

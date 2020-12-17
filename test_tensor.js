@@ -255,17 +255,30 @@ describe('Tensor', () => {
     })
   })
 
-  describe('matmul', () => {
-    // it('should do matrix vector multiplication', () => {
-    //   let A = new Tensor([
-    //     [1, 2, 3],
-    //     [3, 4, 5],
-    //     [6, 7, 8]
-    //   ])
-    //   let x = new Tensor([1,2,3])
+  describe('dot', () => {
+    it('should dot vectors', () => {
+      let a = new Tensor([1,2,3])
+      let b = new Tensor([4,5,6])
 
-    //   assert.deepEqual(A.matmul(x), [14, 26, 44])
+      assert.equal(a.dot(b), 32)
+    })
+
+    // it('should error for non-vectors', () => {
+
     // })
+  })
+
+  describe('matmul', () => {
+    it('should do matrix vector multiplication', () => {
+      let A = new Tensor([
+        [1, 2, 3],
+        [3, 4, 5],
+        [6, 7, 8]
+      ])
+      let x = new Tensor([1,2,3])
+
+      assert.deepEqual(A.matmul(x).asVectors(), [14, 26, 44])
+    })
 
     it('should do matrix matrix multiplication', () => {
       let A = new Tensor([

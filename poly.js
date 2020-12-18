@@ -108,38 +108,73 @@ function setup() {
 }
 
 // TODO: Way to clear points, way to undo
-let points = []
+let points = {x: [], y: []}
 
 function mouseClicked(x, y) {
-  points.push({x: x, y: y})
+  points.x.push(x)
+  points.y.push(y)
 
-  console.log("x: " + x + " y: " + y)
+  draw()
 }
 
-
-function draw() {
+function drawAxis() {
   // Coordinate axis
   line(0, 0, 0, height/2)
   line(0, 0, 0, -height/2)
   line(0, 0, width/2, 0)
   line(0, 0, -width/2, 0)
+}
 
+function polyToF(poly) {
+  return (x) => {
+    let sum = 0;
+    for (let i = 0; i < poly.length; i++) {
+      sum += poly[i] * x**i
+    }
 
+    return sum
+  }
+}
+
+function draw() {
+  ctx.clearRect(-canvas.width/2,-canvas.height/2, canvas.width, canvas.height)
+
+  drawAxis()
   // Test scatter
-  scatter([1, 2, 3], [4, 5, 3], 30, 30)
+  console.log('draw', points)
+  scatter(points.x, points.y, 1, 1)
 
   // Test plot
   // plot([1, 2, 3], [4, 5, 3], 30, 30)
 
-  // TODO: Use beiz
+  // TODO: Use beiz for polynomial curve?
 
-  const [xs, ys] = dataf(x => x**2/3, -5, 5, 0.1)
-  plot(xs, ys, 30, 30)
-
+  // const [xs, ys] = dataf(x => x**2/3, -5, 5, 0.1)
+  if (points.x.length > 0) {
+    const poly = solvePoints().asVectors()
+    console.log('poly', poly)
+    const [xs, ys] = dataf(polyToF(poly), -300, 300, 1)
+    plot(xs, ys, 1, 1)
+  }
 
 }
 
+function solvePoints() {
+  let xt = new Tensor(points.x)
+  let degree = points.x.length
+  let A = Tensor.zeros([points.x.length, degree])
+  for (let row = 0; row < A.shape[0]; row++) {
+    for (let col = 0; col < A.shape[1]; col++) {
+      A[row][col] = xt[row] ** col
+    }
+  }
+  let b = new Tensor(points.y)
 
+  let x = Tensor.solve(A, b)
+
+  return x // used as poly
+}
 
 setup()
-draw() // todo: repeat or callbacks?
+drawAxis()
+draw() // repeated mouseClicked

@@ -277,6 +277,10 @@ class Tensor {
     return new Tensor(AUG)
   }
 
+  copy() {
+    return new Tensor(this.asVectors())
+  }
+
 
   // Solve a system of equations using gaussian elimination
   // TODO:
@@ -291,31 +295,40 @@ class Tensor {
       throw Error(`Can only solve (n,) outputs`)
     }
 
-    const n = A.shape[0]
+    A = A.copy()
+    b = b.copy()
 
-    // Augment the matrix
-    // Calling it R because R[i] is row i
-    let R = A.augment(b)
+    // Elimination, get the matrix into row-echelon-form
+    let i = 0
+    while (i < A.shape[0] && i < A.shape[1]) {
+      const pivot = A[i][i]
 
+      for (let row = i+1; row < A.shape[0]; row++) {
+        const val = A[row][i] // value to zero out
 
-    // TODO: Make this work for any matrix, not just 2x2
+        // Do the row operations, done multiple times since we avoid
+        // creating an augmented matrix for simplicity.
+        A[row] = A[row].add(A[i].mul(-val/pivot))
+        b[row] = b[row] - b[i] * (val/pivot)
+      }
 
-    // E(2,1)
-    let pivot = R[0][0]
-    let target = R[1][0]
-    console.log('pivot', pivot, 'target', target)
-    R[1] = R[1].add(R[0].mul(-target/pivot))
-
-    console.log('R')
-    console.log(R.pretty())
-
-    // Back substitution
-    for (let i = R.shape[0]-1; i >= 0; i--) {
-      // TODO
+      i += 1
     }
 
-    return R
+    // Back substitution, bottom diagonal upwards.
+    let x = Tensor.zeros(b.shape)
+    for (let row = b.shape[0]-1; row >= 0; row--) {
+      const pivot = A[row][row]
+      const evaluated = A[row].mul(x)
+
+      b[row] = b[row] - evaluated.v.reduce((x,y)=>x+y,0) // todo: sum() method?
+      x[row] = b[row] / pivot
+    }
+
+    return x
   }
 }
 
-if (module) module.exports = Tensor
+if (typeof module !== 'undefined') {
+  module.exports = Tensor
+}

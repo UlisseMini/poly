@@ -329,7 +329,6 @@ describe('Tensor', () => {
     })
   })
 
-  /*
   describe('solve', () => {
     it('should solve 2x2 systems of equations', () => {
       let A = new Tensor([
@@ -341,6 +340,17 @@ describe('Tensor', () => {
 
       assert.deepEqual(A.matmul(x).asVectors(), b.asVectors())
     })
+
+    it('should solve 3x3 systems of equations', () => {
+      let A = new Tensor([
+        [1, 1, 4],
+        [1, 2, 3],
+        [1, 3, 3],
+      ])
+      let b = new Tensor([3, 2, 4])
+
+      let x = Tensor.solve(A, b)
+      assert.deepEqual(A.matmul(x).asVectors(), b.asVectors())
+    })
   })
-  */
 })

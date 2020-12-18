@@ -152,7 +152,9 @@ function draw() {
   // const [xs, ys] = dataf(x => x**2/3, -5, 5, 0.1)
   if (points.x.length > 0) {
     const poly = solvePoints().asVectors()
-    console.log('poly', poly)
+    // show the polynomial in console
+    console.log(poly.map((v,i) => `${v}x**${i}`).reverse().join(' + '))
+
     const [xs, ys] = dataf(polyToF(poly), -300, 300, 1)
     plot(xs, ys, 1, 1)
   }

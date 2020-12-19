@@ -137,7 +137,7 @@ function polyToF(poly) {
 }
 
 function draw() {
-  ctx.clearRect(-canvas.width/2,-canvas.height/2, canvas.width, canvas.height)
+  ctx.clearRect(-width/2,-height/2, width, height)
 
   drawAxis()
   // Test scatter
@@ -155,7 +155,7 @@ function draw() {
     // show the polynomial in console
     console.log(poly.map((v,i) => `${v}x**${i}`).reverse().join(' + '))
 
-    const [xs, ys] = dataf(polyToF(poly), -300, 300, 1)
+    const [xs, ys] = dataf(polyToF(poly), -width, width, 1)
     plot(xs, ys, 1, 1)
   }
 
